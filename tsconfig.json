@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "target": "ES6",
+        "outDir": "./public/build",
+        "declaration": true,
+        "sourceMap": true,
+        "strict": true
+    },
+    "include": [
+        "custom-typings/*.d.ts",
+        "src/**/*.ts"
+    ]
+}

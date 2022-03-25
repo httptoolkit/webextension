@@ -1,0 +1,37 @@
+{
+  "name": "httptoolkit-webextension",
+  "version": "1.0.0",
+  "description": "A browser extension used in HTTP Toolkit",
+  "main": "index.js",
+  "scripts": {
+    "build": "esbuild src/background.ts --bundle --sourcemap --outdir=public/build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/httptoolkit/webextension.git"
+  },
+  "keywords": [
+    "httptoolkit",
+    "extension",
+    "webextension",
+    "webrtc",
+    "mockrtc",
+    "hook",
+    "http",
+    "toolkit"
+  ],
+  "author": "Tim Perry <tim@httptoolkit.tech>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/httptoolkit/webextension/issues"
+  },
+  "homepage": "https://github.com/httptoolkit/webextension#readme",
+  "dependencies": {
+    "@types/webextension-polyfill": "^0.8.2",
+    "webextension-polyfill": "^0.8.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.14.27",
+    "typescript": "^4.6.3"
+  }
+}

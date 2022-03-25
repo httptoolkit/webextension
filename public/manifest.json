@@ -1,0 +1,9 @@
+{
+    "name": "HTTP Toolkit",
+    "description": " A browser extension used in HTTP Toolkit",
+    "version": "1.0.0",
+    "manifest_version": 3,
+    "background": {
+      "service_worker": "build/background.js"
+    }
+}
