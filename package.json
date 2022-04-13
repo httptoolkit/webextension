@@ -4,9 +4,10 @@
   "description": "A browser extension used in HTTP Toolkit",
   "main": "index.js",
   "scripts": {
-    "build": "esbuild src/background.ts --bundle --sourcemap --outdir=public/build",
+    "build": "node ./esbuild.js",
     "ts-check": "tsc --noEmit",
-    "test": "npm run ts-check"
+    "test": "npm run ts-check",
+    "start:dev": "node ./start-dev-server.js & DEV_MODE=true npm run build"
   },
   "repository": {
     "type": "git",
@@ -30,10 +31,14 @@
   "homepage": "https://github.com/httptoolkit/webextension#readme",
   "dependencies": {
     "@types/webextension-polyfill": "^0.8.2",
+    "mockrtc": "^0.1.0",
     "webextension-polyfill": "^0.8.0"
   },
   "devDependencies": {
+    "@esbuild-plugins/node-globals-polyfill": "^0.1.1",
+    "@esbuild-plugins/node-modules-polyfill": "^0.1.4",
     "esbuild": "^0.14.27",
+    "mockttp": "^3.2.2",
     "typescript": "^4.6.3"
   }
 }

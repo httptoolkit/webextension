@@ -1,6 +1,7 @@
 {
     "compilerOptions": {
         "target": "ES6",
+        "moduleResolution": "node",
         "outDir": "./public/build",
         "declaration": true,
         "sourceMap": true,

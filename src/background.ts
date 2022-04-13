@@ -1,5 +1,9 @@
 import * as webextension from 'webextension-polyfill';
+import * as MockRTC from 'mockrtc';
 
-webextension.runtime.onInstalled.addListener(() => {
-    console.log('Installed!');
+const server = MockRTC.getRemote();
+
+webextension.runtime.onInstalled.addListener(async () => {
+    await server.start();
+    console.log('Mock session started');
 });
