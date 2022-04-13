@@ -7,6 +7,7 @@ esbuild
     .build({
         entryPoints: [
             "./src/background.ts",
+            "./src/content-script.ts"
         ],
         bundle: true,
         sourcemap: true,

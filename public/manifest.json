@@ -5,5 +5,11 @@
     "manifest_version": 3,
     "background": {
       "service_worker": "build/background.js"
-    }
+    },
+    "content_scripts": [
+      {
+        "matches": ["*://*/*"],
+        "js": ["build/content-script.js"]
+      }
+    ]
 }
