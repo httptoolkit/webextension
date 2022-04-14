@@ -4,12 +4,22 @@
     "version": "1.0.0",
     "manifest_version": 3,
     "background": {
-      "service_worker": "build/background.js"
+        "service_worker": "build/background.js"
     },
     "content_scripts": [
-      {
-        "matches": ["*://*/*"],
-        "js": ["build/content-script.js"]
-      }
+        {
+            "matches": [
+                "*://*/*"
+            ],
+            "js": [
+                "build/content-script.js"
+            ]
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": ["build/injected-script.js"],
+            "matches": ["*://*/*"]
+        }
     ]
 }
