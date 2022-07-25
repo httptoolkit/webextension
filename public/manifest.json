@@ -6,11 +6,17 @@
     "background": {
         "service_worker": "build/background.js"
     },
+    "permissions": [
+        "proxy"
+    ],
     "content_scripts": [
         {
             "matches": [
                 "*://*/*"
             ],
+            "run_at": "document_start",
+            "all_frames": true,
+            "match_about_blank": true,
             "js": [
                 "build/content-script.js"
             ]

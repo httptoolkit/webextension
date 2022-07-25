@@ -103,5 +103,7 @@ dist
 # TernJS port file
 .tern-port
 
-# Build output
+# Build output:
 public/build/
+# Injected temporary config values:
+public/config/

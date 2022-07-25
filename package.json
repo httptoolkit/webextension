@@ -31,6 +31,7 @@
   "homepage": "https://github.com/httptoolkit/webextension#readme",
   "dependencies": {
     "@types/webextension-polyfill": "^0.8.2",
+    "graphql": "^15.8.0",
     "mockrtc": "^0.1.0",
     "webextension-polyfill": "^0.8.0"
   },
