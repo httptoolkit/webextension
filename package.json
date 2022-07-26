@@ -4,7 +4,9 @@
   "description": "A browser extension used in HTTP Toolkit",
   "main": "index.js",
   "scripts": {
-    "build": "esbuild src/background.ts --bundle --sourcemap --outdir=public/build"
+    "build": "esbuild src/background.ts --bundle --sourcemap --outdir=public/build",
+    "ts-check": "tsc --noEmit",
+    "test": "npm run ts-check"
   },
   "repository": {
     "type": "git",
