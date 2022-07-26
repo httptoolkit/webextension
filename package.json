@@ -4,7 +4,7 @@
   "description": "A browser extension used in HTTP Toolkit",
   "main": "index.js",
   "scripts": {
-    "build": "node ./esbuild.js",
+    "build": "node ./esbuild.js && mkdir -p public/config/",
     "ts-check": "tsc --noEmit",
     "test": "npm run ts-check",
     "start:dev": "node-dev ./start-dev-server.js & DEV_MODE=true npm run build"
