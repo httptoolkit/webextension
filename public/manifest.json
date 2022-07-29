@@ -7,25 +7,16 @@
         "service_worker": "build/background.js"
     },
     "permissions": [
+        "scripting",
         "proxy"
     ],
-    "content_scripts": [
-        {
-            "matches": [
-                "*://*/*"
-            ],
-            "run_at": "document_start",
-            "all_frames": true,
-            "match_about_blank": true,
-            "js": [
-                "build/content-script.js"
-            ]
-        }
+    "host_permissions": [
+        "<all_urls>"
     ],
     "web_accessible_resources": [
         {
             "resources": ["build/injected-script.js"],
-            "matches": ["*://*/*"]
+            "matches": ["<all_urls>"]
         }
     ]
 }

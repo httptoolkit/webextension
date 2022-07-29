@@ -19,8 +19,8 @@ import {
 interface InjectedConfig {
     mockRtc: {
         peerId: string;
-        mockRtcUrl: string;
-    };
+        adminBaseUrl: string;
+    } | false;
 }
 
 interface WebExtProxySettings {
@@ -33,7 +33,15 @@ interface WebExtProxySettings {
     }
 }
 
-const mockPeerPromise = getDeferred<MockRTC.MockRTCPeer>();
+/**
+ * Initially undefined. Becomes true if we get MockRTC config at startup.
+ * If we ever get an empty config (meaning MockRTC is explicitly disabled)
+ * then this becomes false, and the extension is disabled until the browser
+ * (or the extension) is restarted.
+ */
+let isActive: true | false | undefined = undefined;
+
+let mockPeerPromise = getDeferred<MockRTC.MockRTCPeer>();
 
 type RealAdminClient = Mockttp.PluggableAdmin.AdminClient<{}>;
 
@@ -91,51 +99,141 @@ class MinimalAdminClient {
  * Once we have the config settings, we can then build a MockRTC peer from the given URL and peer id,
  * and use that to do the subsequent MockRTC interception steps.
  */
-webextension.proxy.settings.get({}).then(async (config: { value: WebExtProxySettings }) => {
-    const singleProxySetting = config?.value?.rules?.singleProxy;
+async function updateMockRTCPeerConnection() {
+    try {
+        const config: { value?: WebExtProxySettings } = await webextension.proxy.settings.get({});
+        const singleProxySetting = config?.value?.rules?.singleProxy;
 
-    if (!singleProxySetting) {
-        throw new Error("Could not detect Chrome proxy settings, can't intercept WebRTC");
+        if (!singleProxySetting) {
+            throw new Error("Could not detect Chrome proxy settings, can't intercept WebRTC");
+        }
+
+        const proxyAddress = `${singleProxySetting.host}:${singleProxySetting.port}`;
+
+        // Get a filesystem-safe key from this address, i.e. no colons.
+        const configKey = proxyAddress
+            .replace(/\./g, '_')
+            .replace(/:/g, '.'); // -> 127_0_0_1.8000
+
+        const configPath = webextension.runtime.getURL(`/config/${configKey}`);
+
+        const htkConfig: InjectedConfig = await fetch(configPath)
+            .then(r => r.json())
+            .catch((e) => {
+                console.warn(e);
+                throw new Error(`No WebExtension config available for ${configKey}`);
+            });
+
+        if (htkConfig.mockRtc === false) {
+            shutdown();
+            return;
+        }
+
+        const adminClient = new MinimalAdminClient(htkConfig.mockRtc.adminBaseUrl) as
+            unknown as MockRTC.PluggableAdmin.AdminClient<{}>;
+
+        mockPeerPromise.resolve(new MockRTCRemotePeer(htkConfig.mockRtc.peerId, adminClient));
+        isActive = true;
+        console.log('HTTP Toolkit extension initialised');
+    } catch (e) {
+        // Some general error happened - we're not active, but we don't shut down until we
+        // explicitly get config that says to do so.
+        isActive = undefined;
+
+        // On unrecognized errors, wait a second, then try again, until we get a real config,
+        // or we explicitly shut down.
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+            .then(() => updateMockRTCPeerConnection());
+    }
+}
+
+
+async function recoverAfterFailure() {
+    if (isActive === false) throw new Error('MockRTC interception disabled');
+
+    // If we somehow call this after another failure/before setup completes, wait
+    // for the other failure case.
+    if (isActive === undefined) return mockPeerPromise;
+
+    mockPeerPromise = getDeferred<MockRTC.MockRTCPeer>();
+    isActive = undefined;
+
+    while (isActive === undefined) {
+        await updateMockRTCPeerConnection();
+    }
+}
+
+function shutdown() {
+    isActive = false; // Block all future calls
+
+    const shutdownError = new Error('MockRTC interception disabled');
+
+    // If the peer promise is pending, reject it:
+    mockPeerPromise.reject(shutdownError);
+    // Just in case it wasn't, create a new one, and reject that too:
+    mockPeerPromise = getDeferred<MockRTC.MockRTCPeer>();
+    mockPeerPromise.reject(shutdownError);
+
+    // Stop injecting into pages:
+    webextension.scripting.unregisterContentScripts();
+}
+
+// Set up the MockRTC peer connection, if possible, and start injecting into pages:
+updateMockRTCPeerConnection().then(async () => {
+    if (!isActive) {
+        console.log("WebRTC mocking disabled");
+        return;
     }
 
-    const proxyAddress = `${singleProxySetting.host}:${singleProxySetting.port}`;
-
-    // Get a filesystem-safe key from this address, i.e. no colons.
-    const configKey = proxyAddress
-        .replace(/\./g, '_')
-        .replace(/:/g, '.'); // -> 127_0_0_1.8000
-
-    const configPath = webextension.runtime.getURL(`/config/${configKey}`);
-
-    const htkConfig: InjectedConfig = await fetch(configPath)
-        .then(r => r.json())
-        .catch((e) => {
-            console.warn(e);
-            throw new Error(`Failed to load WebExtension config for ${configKey}`);
-        });
-
-    const adminClient = new MinimalAdminClient(htkConfig.mockRtc.mockRtcUrl) as
-        unknown as MockRTC.PluggableAdmin.AdminClient<{}>;
-
-    mockPeerPromise.resolve(new MockRTCRemotePeer(htkConfig.mockRtc.peerId, adminClient));
-    console.log('HTTP Toolkit extension initialised');
+    // If and only if we eventually manage to load a useful config, we start injecting
+    // the content scripts into every loaded frame:
+    await webextension.scripting.unregisterContentScripts();
+    await webextension.scripting.registerContentScripts([
+        {
+            id: 'rtc-content-script',
+            matches: ['<all_urls>'],
+            persistAcrossSessions: false,
+            allFrames: true,
+            js: ['build/content-script.js']
+        }
+    ]);
 });
+
+// Methods that map to/from messages from injected scripts to calls to our
+// mock RTC peer:
 
 async function runPeerMethod<M extends PeerMethodKeys>(
     request: PeerCallRequest<M>
 ): Promise<ReturnType<MockRTC.MockRTCPeer[M]>> {
-    const { methodName, args } = request;
-    const peer = await mockPeerPromise;
-    return (peer[methodName] as any).apply(peer, args);
+    if (isActive === false) throw new Error('MockRTC interception disabled');
+
+    try {
+        const { methodName, args } = request;
+        const peer = await mockPeerPromise;
+
+        return await (peer[methodName] as any).apply(peer, args);
+    } catch (e) {
+        console.log(e);
+        await recoverAfterFailure();
+        return runPeerMethod(request);
+    }
 }
 
 async function runSessionMethod<M extends SessionMethodKeys>(
     request: SessionCallRequest<M>
 ): Promise<ReturnType<MockRTC.MockRTCSession[M]>> {
-    const { sessionId, methodName, args } = request;
-    const peer = await mockPeerPromise;
-    const session = peer.getSession(sessionId);
-    return (session[methodName] as any).apply(session, args);
+    if (isActive === false) throw new Error('MockRTC interception disabled');
+
+    try {
+        const { sessionId, methodName, args } = request;
+        const peer = await mockPeerPromise;
+        const session = peer.getSession(sessionId);
+        return await (session[methodName] as any).apply(session, args);
+    } catch (e) {
+        console.log(e);
+        await recoverAfterFailure();
+        return runSessionMethod(request);
+    }
 }
 
 webextension.runtime.onMessage.addListener(((
