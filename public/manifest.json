@@ -1,6 +1,7 @@
 {
     "name": "HTTP Toolkit",
     "description": " A browser extension used in HTTP Toolkit",
+    "key": "jggocihfdfgogbofcmdlfbakdkgdkdoe",
     "version": "1.0.0",
     "manifest_version": 3,
     "background": {
