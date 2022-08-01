@@ -21,8 +21,19 @@ jobs:
       - run: npm run build
       - run: npm test
 
+      - run: zip -r webextension.zip public/
+
       - uses: actions/upload-artifact@v3
         with:
           name: webextension
-          path: public/
+          path: webextension.zip
           if-no-files-found: error
+
+      - name: Publish tagged release
+        uses: svenstaro/upload-release-action@v2
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: webextension.zip
+          file_glob: true
+          tag: ${{ github.ref }}

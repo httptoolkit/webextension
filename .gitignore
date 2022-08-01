@@ -105,5 +105,9 @@ dist
 
 # Build output:
 public/build/
+
 # Injected temporary config values:
 public/config/
+
+# Built extension:
+webextension.zip
