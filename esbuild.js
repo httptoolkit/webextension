@@ -28,7 +28,12 @@ const { NodeGlobalsPolyfillPlugin } = require('@esbuild-plugins/node-globals-pol
                 process: true,
                 buffer: true
             }),
-            clean({ patterns: ['./public/build/**/*'] })
+            clean({
+                patterns: [
+                    './public/build/**/*',
+                    './public/config/**/*',
+                ]
+            })
         ]
     })
     .catch(() => process.exit(1));
