@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "node ./esbuild.js && mkdir -p public/config/",
+    "version": "npm run build && git add public/manifest.json",
     "ts-check": "tsc --noEmit",
     "test": "npm run ts-check",
     "start:dev": "node-dev ./start-dev-server.js & DEV_MODE=true npm run build"

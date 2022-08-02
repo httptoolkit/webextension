@@ -21,8 +21,12 @@
     ],
     "web_accessible_resources": [
         {
-            "resources": ["build/injected-script.js"],
-            "matches": ["<all_urls>"]
+            "resources": [
+                "build/injected-script.js"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
         }
     ]
 }
