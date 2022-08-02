@@ -1,6 +1,6 @@
 {
   "name": "httptoolkit-webextension",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A browser extension used in HTTP Toolkit",
   "main": "index.js",
   "scripts": {
