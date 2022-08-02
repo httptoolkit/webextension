@@ -164,6 +164,9 @@ async function recoverAfterFailure() {
     isActive = undefined;
 
     while (isActive === undefined) {
+        // Add a brief delay, to avoid hard loops if the server is constantly broken.
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
         await updateMockRTCPeerConnection();
     }
 }
