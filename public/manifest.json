@@ -7,7 +7,7 @@
         "128": "icon-128.png"
     },
     "key": "jggocihfdfgogbofcmdlfbakdkgdkdoe",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "manifest_version": 3,
     "background": {
         "service_worker": "build/background.js"
