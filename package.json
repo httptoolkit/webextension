@@ -32,7 +32,7 @@
   "dependencies": {
     "@types/webextension-polyfill": "^0.9.0",
     "graphql": "^15.8.0",
-    "mockrtc": "^0.1.0",
+    "mockrtc": "^0.2.0",
     "webextension-polyfill": "^0.9.0"
   },
   "devDependencies": {
