@@ -21,7 +21,7 @@ jobs:
       - run: npm run build
       - run: npm test
 
-      - run: zip -r webextension.zip public/
+      - run: zip -r webextension.zip public/*
 
       - uses: actions/upload-artifact@v3
         with:
