@@ -10,12 +10,11 @@ jobs:
         node-version: [14.x, 16.x, 18.x, v18.16, '*']
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-      - run: npm install -g npm@^8
 
       - run: npm ci
       - run: npm run build
@@ -23,7 +22,7 @@ jobs:
 
       - run: zip -r webextension.zip public/*
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: webextension
           path: webextension.zip
